@@ -36,9 +36,10 @@ import { spawn, spawnSync } from 'node:child_process';
 import {
   existsSync, mkdirSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync,
 } from 'node:fs';
-import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { seeNowHome } from './home.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const LISTEN_SCRIPT = join(HERE, '..', 'examples', 'floating-chat', 'listen.py');
@@ -108,7 +109,7 @@ function readJson(p) {
 }
 
 function dshHome(env = process.env) {
-  return env.DSH_HOME || join(homedir(), '.dsh');
+  return seeNowHome(env);
 }
 
 // ------------------------------------------------------------------ 转写

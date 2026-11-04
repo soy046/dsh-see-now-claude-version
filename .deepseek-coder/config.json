@@ -1,0 +1,17 @@
+{
+  "allowedCommands": [
+    "npm test",
+    "node --test",
+    "npm install @modelcontextprotocol/sdk@1.32.2 zod@4"
+  ],
+  "model": "deepseek-flash[1m]",
+  "maxTurns": 20,
+  "extraInstructions": "Never write to stdout from src/mcp.js except through the MCP transport; log to stderr.",
+  "approvalMode": "step",
+  "gitMode": "commit",
+  "maxFixRounds": 3,
+  "markerExpiryMinutes": 30,
+  "deepseekPricing": { "input": 2, "cacheHit": 0.04, "output": 8, "currency": "CNY" },
+  "showDiff": "stat",
+  "smallTaskPolicy": "ask"
+}

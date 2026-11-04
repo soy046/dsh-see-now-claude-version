@@ -13,13 +13,13 @@
  */
 
 import { appendFileSync, closeSync, mkdirSync, openSync, readSync, statSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 
+import { seeNowHome } from './home.js';
 import { emitSpeech } from './speech.js';
 
 export function dshHome(env = process.env) {
-  return env.DSH_HOME || join(homedir(), '.dsh');
+  return seeNowHome(env);
 }
 
 export function chatDir(env = process.env) {

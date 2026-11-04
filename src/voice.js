@@ -18,10 +18,10 @@
 
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { seeNowHome } from './home.js';
 import { emitSpeech, emitSpoken, lastSpeech, onSpeech, speechSubscribers } from './speech.js';
 
 /**
@@ -45,7 +45,7 @@ const pending = new Map();
 export function configuredVoiceAdapter(env = process.env) {
   const fromEnv = String(env.DSH_VOICE_ADAPTER ?? '').trim();
   if (fromEnv) return fromEnv;
-  const home = env.DSH_HOME || join(env.USERPROFILE || env.HOME || homedir(), '.dsh');
+  const home = seeNowHome(env);
   try {
     const cfg = JSON.parse(readFileSync(join(home, 'voice.json'), 'utf8'));
     const spec = String(cfg?.adapter ?? '').trim();
@@ -66,7 +66,7 @@ export function configuredVoiceAdapter(env = process.env) {
  * `attach(api, options)`。**老适配器不受影响**：它们本来就只接一个参数。
  */
 export function configuredVoiceOptions(env = process.env) {
-  const home = env.DSH_HOME || join(env.USERPROFILE || env.HOME || homedir(), '.dsh');
+  const home = seeNowHome(env);
   try {
     const cfg = JSON.parse(readFileSync(join(home, 'voice.json'), 'utf8'));
     const opts = cfg?.options;
@@ -199,7 +199,7 @@ export async function attachConfiguredVoice({ env = process.env, log = () => {} 
 export function voiceSignature(env = process.env) {
   const spec = configuredVoiceAdapter(env);
   if (!spec) return '';
-  const home = env.DSH_HOME || join(env.USERPROFILE || env.HOME || homedir(), '.dsh');
+  const home = seeNowHome(env);
   let stamp = 'none';
   try {
     const buf = readFileSync(join(home, 'tts.json'));

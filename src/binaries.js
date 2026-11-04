@@ -14,8 +14,9 @@
  */
 
 import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
+
+import { seeNowHome } from './home.js';
 
 const exe = (platform) => (platform === 'win32' ? '.exe' : '');
 
@@ -31,7 +32,7 @@ export function resolveFfmpeg({ env = process.env, platform = process.platform }
   const dir = env.DSH_FFMPEG_DIR;
   if (dir) return { path: join(dir, name), source: 'DSH_FFMPEG_DIR' };
 
-  const home = env.DSH_HOME || join(env.USERPROFILE || env.HOME || homedir(), '.dsh');
+  const home = seeNowHome(env);
   const candidates = [
     join(home, 'tools', 'ffmpeg', 'bin', name),
     join(home, 'bin', name),
