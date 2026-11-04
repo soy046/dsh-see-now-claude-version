@@ -30,7 +30,8 @@
     "./runner": "./src/runner.js",
     "./loop": "./src/loop.js",
     "./timer": "./src/timer.js",
-    "./tool-spec": "./src/tool-spec.js"
+    "./tool-spec": "./src/tool-spec.js",
+    "./mcp": "./src/mcp.js"
   },
   "files": [
     "bin",
@@ -52,6 +53,7 @@
   },
   "scripts": {
     "test": "node --test",
+    "mcp": "node src/mcp.js",
     "debug:live": "node debug/live.mjs",
     "install-dev": "node scripts/install-dev.mjs",
     "check": "node scripts/install-dev.mjs --check",
@@ -83,5 +85,9 @@
   },
   "bin": {
     "dsh-see-window": "bin/see-window.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "^4.6.7"
   }
 }

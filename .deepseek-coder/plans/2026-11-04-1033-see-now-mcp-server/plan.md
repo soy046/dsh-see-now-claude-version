@@ -32,3 +32,10 @@
 1. Shared home helper: add src/home.js (seeNowHome) and route all 6 home computations through it, with tests.
 2. Headless runner: createRunner({headless:true}) skips window, window chat and audio, with tests.
 3. MCP server: add src/mcp.js (McpServer + zod, stdio), deps, package.json script/export, and test/mcp.test.mjs with a fake runner.
+
+## Decisions added at step-03 review (user approved the spec)
+- Concurrent watch (busy) -> isError.
+- Region picker timeout / no-python / no-script / failed -> isError; cancelled -> normal text.
+- Pace notes drop the wake-interval wording (no loop in MCP).
+- Server exits on stdin close / SIGINT / SIGTERM after runner.stop().
+- English tool + parameter descriptions as written in step-03.md.
