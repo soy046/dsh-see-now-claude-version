@@ -149,7 +149,11 @@ export function guardReason({ hungUp = false, fileEnded = false, explicitSrc = f
   return null;
 }
 
-export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec = 60, ctx = null } = {}) {
+export function createRunner({
+  ffmpegPath = 'ffmpeg', log = () => {}, graceSec = 60, ctx = null,
+  // headless：给 MCP server 用 —— 那边没有悬浮窗，也没有声音，只采集和打包。
+  headless = false,
+} = {}) {
   let pipeline = null;   // 当前（或刚停的）引擎 —— 停采集后仍留着，好把队列里剩的图发完
   let running = false;
   let run = null;
@@ -169,7 +173,14 @@ export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec =
    * 为什么在 runner 里而不是在工具层：它的生命周期和采集是同一个 ——
    * 开始看就开听，收工就停，中途换清晰度/换 region 也不用重启（音频跟画面无关）。
    */
-  const listener = createListener({ ctx, log });
+  const listener = headless
+    ? {
+      start: async () => ({ ok: false, reason: 'headless' }),
+      stop: () => {},
+      between: () => [],
+      state: () => ({ enabled: false, reason: 'headless' }),
+    }
+    : createListener({ ctx, log });
   /**
    * 上一张图的时间窗末尾（epoch ms）。台词按"上一张到现在"取，
    * 不能按这一张自己的 from/to —— 静止屏幕上两张之间隔 60 秒，中间说的话会整段漏掉。
@@ -205,7 +216,7 @@ export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec =
   let runOpts = {};
   // 共享一个 watcher：每做一个新的会重新 prime（只记位置不读旧消息），
   // 那模型思考期间用户说的话就永远看不见了。
-  const chatPoll = chatWatcherShared();
+  const chatPoll = headless ? () => [] : chatWatcherShared();
   let windowState = null;
   let windowPending = null;
   /**
@@ -380,6 +391,11 @@ export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec =
    * 不然会拿到一个"成功"但其实早就退了的窗（pid 指向死进程）。
    */
   async function ensureWindow() {
+    // headless 没有窗可开：不碰 openWindow / setWindowHidden，状态如实说不开
+    if (headless) {
+      windowState = { ok: false, reason: 'headless' };
+      return windowState;
+    }
     if (windowState?.ok) return windowState;
     if (windowPending) return windowPending;
     windowPending = openWindow({ log }).then((st) => {
@@ -592,7 +608,7 @@ export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec =
         // 用户看到的就是"我在窗口里说话，它一动不动"（陪看那边实报过）。
         //
         // 冷启动的 eager 也算"在等"：那 3 秒里用户说的话同样不能被循环吃掉。
-        const leaveChan = enterChatWait();
+        const leaveChan = headless ? () => {} : enterChatWait();
         try {
           /**
            * **冷启动先给此刻**。
@@ -683,7 +699,7 @@ export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec =
     peek() {
       const queued = pipeline?.take() ?? null;
       if (running) armGrace();
-      if (!windowState?.ok && !windowPending) void ensureWindow();
+      if (!headless && !windowState?.ok && !windowPending) void ensureWindow();
       return attachLines(queued);
     },
 
@@ -707,6 +723,7 @@ export function createRunner({ ffmpegPath = 'ffmpeg', log = () => {}, graceSec =
     status() {
       return {
         running,
+        headless,
         source,
         lastSource,
         hungUp,
